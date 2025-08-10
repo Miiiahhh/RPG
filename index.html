@@ -327,6 +327,183 @@
             <div class="character-name">
                 <input type="text" value="MAYA" placeholder="Nome do Personagem">
             </div>
+
+    <script>
+        // Função para salvar dados automaticamente
+        function saveData() {
+            const data = {};
+            
+            // Salvar todos os inputs
+            document.querySelectorAll('input').forEach((input, index) => {
+                data[`input_${index}`] = input.value;
+            });
+            
+            // Salvar todas as textareas
+            document.querySelectorAll('textarea').forEach((textarea, index) => {
+                data[`textarea_${index}`] = textarea.value;
+            });
+            
+            // Salvar no localStorage
+            localStorage.setItem('maya_rpg_data', JSON.stringify(data));
+            
+            // Mostrar indicador de salvamento
+            showSaveIndicator();
+        }
+        
+        // Função para carregar dados salvos
+        function loadData() {
+            const savedData = localStorage.getItem('maya_rpg_data');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                
+                // Carregar inputs
+                document.querySelectorAll('input').forEach((input, index) => {
+                    if (data[`input_${index}`]) {
+                        input.value = data[`input_${index}`];
+                    }
+                });
+                
+                // Carregar textareas
+                document.querySelectorAll('textarea').forEach((textarea, index) => {
+                    if (data[`textarea_${index}`]) {
+                        textarea.value = data[`textarea_${index}`];
+                    }
+                });
+            }
+        }
+        
+        // Indicador visual de salvamento
+        function showSaveIndicator() {
+            let indicator = document.getElementById('save-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'save-indicator';
+                indicator.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #27ae60;
+                    color: white;
+                    padding: 8px 15px;
+                    border-radius: 5px;
+                    font-size: 14px;
+                    z-index: 1000;
+                    opacity: 0;
+                    transition: opacity 0.3s;
+                `;
+                indicator.textContent = '✓ Salvo automaticamente';
+                document.body.appendChild(indicator);
+            }
+            
+            indicator.style.opacity = '1';
+            setTimeout(() => {
+                indicator.style.opacity = '0';
+            }, 2000);
+        }
+        
+        // Função para resetar dados
+        function resetData() {
+            if (confirm('Tem certeza que quer apagar todos os dados salvos?')) {
+                localStorage.removeItem('maya_rpg_data');
+                location.reload();
+            }
+        }
+        
+        // Função para exportar dados
+        function exportData() {
+            const data = localStorage.getItem('maya_rpg_data');
+            if (data) {
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'maya_rpg_backup.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+        
+        // Função para importar dados
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            localStorage.setItem('maya_rpg_data', JSON.stringify(data));
+                            location.reload();
+                        } catch (error) {
+                            alert('Erro ao importar arquivo!');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+        
+        // Adicionar botões de controle
+        function addControlButtons() {
+            const controlPanel = document.createElement('div');
+            controlPanel.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                display: flex;
+                gap: 10px;
+                z-index: 1000;
+            `;
+            
+            const buttonStyle = `
+                background: #3498db;
+                color: white;
+                border: none;
+                padding: 8px 12px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: bold;
+            `;
+            
+            const exportBtn = document.createElement('button');
+            exportBtn.textContent = '📥 Backup';
+            exportBtn.style.cssText = buttonStyle;
+            exportBtn.onclick = exportData;
+            
+            const importBtn = document.createElement('button');
+            importBtn.textContent = '📤 Restaurar';
+            importBtn.style.cssText = buttonStyle;
+            importBtn.onclick = importData;
+            
+            const resetBtn = document.createElement('button');
+            resetBtn.textContent = '🗑️ Limpar';
+            resetBtn.style.cssText = buttonStyle + 'background: #e74c3c;';
+            resetBtn.onclick = resetData;
+            
+            controlPanel.appendChild(exportBtn);
+            controlPanel.appendChild(importBtn);
+            controlPanel.appendChild(resetBtn);
+            document.body.appendChild(controlPanel);
+        }
+        
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            addControlButtons();
+            
+            // Adicionar eventos de salvamento automático
+            document.addEventListener('input', saveData);
+            document.addEventListener('change', saveData);
+        });
+        
+        // Salvar antes de sair da página
+        window.addEventListener('beforeunload', saveData);
+    </script>
             <div class="character-class">
                 <input type="text" value="Especialista Digital" placeholder="Classe">
             </div>
